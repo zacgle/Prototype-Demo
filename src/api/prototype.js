@@ -36,3 +36,30 @@ export function netOnOff() {
     method: 'get'
   })
 }
+export function getGlobalDelay() {
+  return request({
+    url: '/delay/',
+    method: 'get'
+  })
+}
+export function fault(params) {
+  return request({
+    url: '/fault/',
+    method: 'get',
+    params
+  })
+}
+export function deleteItem(params) {
+  return request({
+    url: '/test/',
+    method: 'get',
+    params
+  })
+}
+export function addItem(params) {
+  return request({
+    url: '/test/',
+    method: 'get',
+    params
+  })
+}
