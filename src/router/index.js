@@ -121,6 +121,30 @@ export const constantRoutes = [
         meta: { title: 'Profile', icon: 'user', noCache: true }
       }
     ]
+  },
+  {
+    path: '/topology',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/topology/index'),
+        name: 'Topology',
+        meta: { title: 'Topology', icon: 'excel', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/chatgpt',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/chatgpt/index'),
+        name: 'GPT',
+        meta: { title: 'GPT', icon: 'excel', noCache: true }
+      }
+    ]
   }
 ]
 

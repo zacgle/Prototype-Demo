@@ -22,6 +22,10 @@
         <span>Sidebar Logo</span>
         <el-switch v-model="sidebarLogo" class="drawer-switch" />
       </div>
+      <div>
+        <el-button type="primary" @click="startNet()">启动网络</el-button>
+        <el-button type="danger" @click="endNet()"> 关闭网络</el-button>
+      </div>
 
     </div>
   </div>
@@ -29,6 +33,7 @@
 
 <script>
 import ThemePicker from '@/components/ThemePicker'
+import { startNet, endNet } from '@/api/prototype'
 
 export default {
   components: { ThemePicker },
@@ -75,6 +80,35 @@ export default {
       this.$store.dispatch('settings/changeSetting', {
         key: 'theme',
         value: val
+      })
+    },
+    startNet() {
+      startNet().then((res) => {
+        console.log(res)
+        if (res.message) {
+          res.msg = res.message
+        }
+        this.$message({
+          message: res.msg,
+          type: res.msg === '服务器中已有对照网络开启' ? 'info' : 'success'
+        })
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'netStatus',
+          value: true
+        })
+      })
+    },
+    endNet() {
+      endNet().then((res) => {
+        console.log(res)
+        this.$message({
+          message: res.msg,
+          type: res.msg === '无网络开启，无须关闭' ? 'info' : 'success'
+        })
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'netStatus',
+          value: false
+        })
       })
     }
   }
