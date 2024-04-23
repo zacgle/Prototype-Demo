@@ -12,7 +12,11 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in permission_routes" :key="route.path" :item="route" :base-path="route.path" />
+        <el-tooltip v-for="route in permission_routes" :key="route.path" effect="dark" :content="route.hidden ? '': route.name" placement="right-start"><sidebar-item
+          :item="route"
+          :base-path="route.path"
+        /></el-tooltip>
+
       </el-menu>
     </el-scrollbar>
   </div>
@@ -49,6 +53,21 @@ export default {
     isCollapse() {
       return !this.sidebar.opened
     }
+  },
+  mounted() {
+    console.log(this.permission_routes)
   }
 }
 </script>
+<style scoped>
+/deep/ .el-menu-item,
+/deep/ .el-submenu__title{
+  font-size: 24px;
+  font-weight: 900;
+  margin-top: 5px;
+  line-height: 60px;
+  height: 70px;
+  margin-bottom: 5px;
+}
+</style>
+

@@ -106,7 +106,7 @@ export default {
   transition: all .25s cubic-bezier(.7, .3, .1, 1);
   transform: translate(100%);
   background: #fff;
-  z-index: 40000;
+  z-index: 200;
 }
 
 .show {
@@ -121,6 +121,7 @@ export default {
 
   .rightPanel {
     transform: translate(0);
+    z-index: 40001;
   }
 }
 

@@ -10,17 +10,21 @@
       </el-dropdown-menu>
     </el-dropdown>
     <div id="networkContainer" ref="networkContainer" />
-    <el-button type="info" @click="testClearCanvas">增加边</el-button>
-    <div class="rightChartPanel">
-      <div class="handle-charts-button" :style="{'bottom':buttonBtm+'px','background-color':theme}"><i class="el-icon-s-marketing" @click="handleChangeChartsView" /></div>
-      <div><ChartView style="padding: 5px;" /></div>
+    <div ref="toggleButton" :class="{show:show}"><div class="handle-charts-button" :style="{'background-color':theme}" @click="toggleSidebar"><i class="el-icon-s-marketing" /></div></div>
+    <div ref="rightChartPanel" :class="{show:show}" class="rightPanel-container">
+      <div class="rightChartPanel-background" />
+
+      <div class="rightChartPanel">
+
+        <div><ChartView style="padding: 8px;" :timer="chartTimer" /></div> <!--侧边栏-->
+      </div>
     </div>
     <div style="position:fixed; left:43vw; top:28vh; z-index: 2001;" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"><PopUp id="popup" :items="testArr" :nodes="nodes" :edges="edges" :style="childStyle" @close="handlePopUpClose" /></div>
 
     <div id="nodeContextMenu" style="display: none; position: absolute; z-index: 80;">
       <!-- 菜单项 -->
       <div v-for="item in menuListItems" :key="item.key" class="menulist" @click="handleIconClick(item.key,item.id)">{{ item.value }}</div>
-      <!-- 更多菜单项 -->
+    <!-- 更多菜单项 -->
     </div>
 
     <div id="overlay" />
@@ -37,6 +41,7 @@ const switch_normal = require('@/assets/network_icons/switch.svg')
 const server_normal = require('@/assets/network_icons/server.svg')
 const vr_normal = require('@/assets/network_icons/vr_goggles.svg')
 const end_equip_normal = require('@/assets/network_icons/end_equip.svg')
+const campus = require('@/assets/network_icons/campus.svg')
 export default {
   name: 'Topology',
   components: { PopUp, ChartView },
@@ -47,6 +52,8 @@ export default {
       path_interval: null,
       nodes: [],
       edges: [],
+      chartTimer: false,
+      show: false,
       networkInstance: null,
       isFetching: false,
       prevNodes: [],
@@ -55,7 +62,7 @@ export default {
       menuListItems: [], // 菜单列表
       imgTranslation: { 0: server_normal, 1: switch_normal, 2: end_equip_normal, 3: vr_normal }, // 图标配对情况4ipad 5苹果
       testArr: [],
-      addOptions: [{ type: 'node', options: [{ key: 'name', label: '名称', category: 'input', modelName: 'name' }, { key: 'type', label: '类型', category: 'select', modelName: 'type', options: ['交换机', '服务器', '手机', 'VR头盔'] }] }, { type: 'edge', options: [{ key: 'name', label: '名称', category: 'input', modelName: 'name' }, { key: 'node1', label: '源节点', category: 'select', modelName: 'node1' }, { key: 'node2', label: '目的节点', category: 'select', modelName: 'node2' }, { key: 'bandwidth', label: '最大带宽', category: 'input', modelName: 'bandwidth' }] }],
+
       isDragging: false,
       childStyle: {
         position: 'absolute',
@@ -64,7 +71,57 @@ export default {
       },
       dragStartX: 0,
       dragStartY: 0,
-      buttonBtm: 0
+      buttonBtm: 0,
+      displayRealGraph: false,
+      presetNodes: [
+        { 'id': '14', 'label': '交通运输部园', img: campus, 'x': 303, 'y': 58 },
+        { 'id': '18', 'label': '北京邮电大学校区', img: campus, 'x': 270, 'y': 210 },
+        { 'id': '20', 'label': '中国政法大学校区', img: campus, 'x': 680, 'y': 212 },
+        { 'id': '8', 'label': '北京师范大学校区', img: campus, 'x': 46, 'y': 305 },
+        { 'id': '4', 'label': '明光村校区', img: campus, 'x': 260, 'y': 354 },
+        { 'id': '7', 'label': '索家坟小区', img: campus, 'x': 76, 'y': 449 },
+        { 'id': '16', 'label': '中治建筑园区', img: campus, 'x': 544, 'y': 539 },
+        { 'id': '5', 'label': '马甸南村小区', img: campus, 'x': 680, 'y': 562 },
+        { 'id': '12', 'label': '北京航空航天大学校区', img: campus, 'x': 581, 'y': 346 },
+        { 'id': '3', 'label': '新街口西里小区', img: campus, 'x': 315, 'y': 576 },
+        { 'id': '17', 'label': '北京交通大学小区', img: campus, 'x': 367, 'y': 57 },
+        { 'id': '15', 'label': '北京电影学院校区', img: campus, 'x': 238, 'y': 246 },
+        { 'id': '9', 'label': '中关村园区', img: campus, 'x': 183, 'y': 593 },
+        { 'id': '1', 'label': '海淀文教产业园区', img: campus, 'x': 223, 'y': 70 },
+        { 'id': '19', 'label': '如意里小区', img: campus, 'x': 523, 'y': 161 },
+        { 'id': '6', 'label': '北京大学校区', img: campus, 'x': 362, 'y': 514 },
+        { 'id': '13', 'label': '清华大学校区', img: campus, 'x': 735, 'y': 46 },
+        { 'id': '10', 'label': '阿里巴巴创业园区', img: campus, 'x': 22, 'y': 294 },
+        { 'id': '11', 'label': '字节跳动创业园区', img: campus, 'x': 54, 'y': 487 },
+        { 'id': '2', 'label': '中关村数字电视园区', img: campus, 'x': 582, 'y': 473 }
+      ],
+      presetEdges: [
+        { 'id': '783', 'source': '1', 'target': '2' },
+        { 'id': '856', 'source': '2', 'target': '3' },
+        { 'id': '515', 'source': '3', 'target': '4' },
+        { 'id': '912', 'source': '4', 'target': '5' },
+        { 'id': '788', 'source': '5', 'target': '6' },
+        { 'id': '575', 'source': '6', 'target': '7' },
+        { 'id': '228', 'source': '7', 'target': '8' },
+        { 'id': '285', 'source': '8', 'target': '9' },
+        { 'id': '309', 'source': '9', 'target': '10' },
+        { 'id': '690', 'source': '10', 'target': '11' },
+        { 'id': '157', 'source': '11', 'target': '12' },
+        { 'id': '336', 'source': '12', 'target': '13' },
+        { 'id': '536', 'source': '13', 'target': '14' },
+        { 'id': '457', 'source': '14', 'target': '15' },
+        { 'id': '926', 'source': '15', 'target': '16' },
+        { 'id': '812', 'source': '16', 'target': '17' },
+        { 'id': '342', 'source': '17', 'target': '18' },
+        { 'id': '817', 'source': '18', 'target': '19' },
+        { 'id': '407', 'source': '19', 'target': '20' },
+        { 'id': '800', 'source': '20', 'target': '1' },
+        // 额外的连接以确保复杂度
+        { 'id': '57', 'source': '20', 'target': '6' },
+        { 'id': '275', 'source': '12', 'target': '2' }
+        // 其他连接...
+      ]
+
     }
   },
   computed: {
@@ -96,11 +153,17 @@ export default {
           this.networkInstance.clear()
         }
         this.isButtonsDisabled = true
+        this.chartTimer = false
       }
     },
     sidebar(newVal, oldVal) {
       if (newVal !== oldVal) {
         this.adjustGraphSize()
+      }
+    },
+    show(value) {
+      if (value) {
+        this.addEventClick()
       }
     }
   },
@@ -125,7 +188,10 @@ export default {
     netOnOff() {
       netOnOff().then((res) => {
         console.log(res)
-        this.$store.state.settings.netStatus = res.data.status
+        this.$store.dispatch('settings/changeSetting', {
+          key: 'netStatus',
+          value: res.data.status
+        })
         this.isButtonsDisabled = !res.data.status
         if (res.data.status && !this.topology_interval) {
           this.topology_interval = setInterval(() => {
@@ -147,6 +213,11 @@ export default {
         this.path_interval = setInterval(() => {
           this.getDrlPath()
         }, 3000)
+        if (res.msg === 'test1.pcap数据包正在发送') {
+          this.chartTimer = true
+        } else {
+          this.chartTimer = false
+        }
       })
     },
     getDrlPath() { // 获取路径
@@ -176,9 +247,9 @@ export default {
         })
         this.prevNodes = []
         path.forEach((element) => {
-          const source = element.srcNodeConnector.slice(0, element.srcNodeConnector.indexOf(':') + 2)
-          const target = element.dstnodeConnector.slice(0, element.dstnodeConnector.indexOf(':') + 2)
-          const edge_id = source + target
+          const source = element.srcNodeConnector
+          const target = element.dstnodeConnector
+          const edge_id = source + '_' + target
           this.prevNodes.push(edge_id)
           if (this.networkInstance.findById(edge_id)) {
             var edge = this.networkInstance.findById(edge_id)
@@ -250,7 +321,7 @@ export default {
             )
           }
         },
-        'cubic' // extend the built-in edge 'cubic'
+        'quadratic' // extend the built-in edge 'cubic'
       )
       const container = this.$refs.networkContainer
 
@@ -323,7 +394,9 @@ export default {
         model.fy = event.y
       })
       this.networkInstance.on('node:click', (event) => {
-        this.toggleMenu(event, 'node')
+        if (this.displayRealGraph) {
+          this.toggleMenu(event, 'node')
+        }
       })
       this.networkInstance.on('wheelzoom', (event) => {
         const menu = document.getElementById('nodeContextMenu')
@@ -332,7 +405,14 @@ export default {
         this.networkInstance.refreshPositions()
       })
       this.networkInstance.on('edge:click', (event) => {
-        this.toggleMenu(event, 'edge')
+        if (this.displayRealGraph) {
+          this.toggleMenu(event, 'edge')
+        }
+      })
+      this.networkInstance.on('node:dblclick', (event) => {
+        this.displayRealGraph = !this.displayRealGraph
+        this.nodes = []
+        this.networkInstance.clear()
       })
       this.networkInstance.on('canvas:click', (event) => {
         const menu = document.getElementById('nodeContextMenu')
@@ -360,12 +440,25 @@ export default {
         this.networkInstance.refreshPositions()
       })
     },
-    async getTopology() { // 获取拓扑
+    getTopology() { // 获取拓扑
       if (this.isFetching) {
         return
       }
+      if (!this.displayRealGraph) {
+        if (this.nodes.length === 0) {
+          this.nodes = this.presetNodes
+          this.edges = this.presetEdges
+          this.networkInstance.data({
+            nodes: this.nodes,
+            edges: this.edges
+          })
+          this.networkInstance.render()
+        }
+
+        return
+      }
       this.isFetching = true
-      await getTopology().then((res) => {
+      getTopology().then((res) => {
         const django_nodes = res.data[ 'network-topology' ][ 'topology' ][ 1 ][ 'node' ]
         const django_edges = res.data[ 'network-topology' ][ 'topology' ][ 1 ][ 'link' ]
 
@@ -456,8 +549,8 @@ export default {
           fault(paras).then((res) => {
             console.log(res)
             this.$message({
-              message: res.msg.includes('down') ? '节点已处于模拟故障状态' : '节点' + itemName + '故障模拟成功',
-              type: res.msg.includes('down') ? 'error' : 'success'
+              message: !res.msg.includes('down') ? '节点已处于模拟故障状态' : '节点' + itemName + '故障模拟成功',
+              type: !res.msg.includes('down') ? 'error' : 'success'
             })
             this.isMenuShow = false
             const menu = document.getElementById('nodeContextMenu')
@@ -467,12 +560,12 @@ export default {
         case '5':
           itemName = id
           console.log(itemName)
-          paras = { node: itemName, status: 'up' }
+          paras = { node: itemName, status: 'on' }
           fault(paras).then((res) => {
             console.log(res)
             this.$message({
-              message: res.msg.includes('up') ? '节点未处于模拟故障状态' : '节点' + itemName + '解除模拟故障成功',
-              type: res.msg.includes('up') ? 'error' : 'success'
+              message: res.msg.includes('无法修改') ? '节点未处于模拟故障状态' : '节点' + itemName + '解除模拟故障成功',
+              type: res.msg.includes('无法修改') ? 'error' : 'success'
             })
             this.isMenuShow = false
             const menu = document.getElementById('nodeContextMenu')
@@ -483,11 +576,6 @@ export default {
           itemName = id
           paras = { operation: 'del_node', name1: itemName }
           deleteItem(paras).then((res) => {
-            console.log(res)
-            // this.$message({
-            //   message: res.msg.includes('up') ? '节点未处于模拟故障状态' : '节点' + itemName + '解除模拟故障成功',
-            //   type: res.msg.includes('up') ? 'error' : 'success'
-            // })
             if (res.msg.includes('已被删除')) {
               this.networkInstance.removeItem(itemName)
               this.prevNodes.filter((item) => {
@@ -546,7 +634,7 @@ export default {
         setTimeout(() => {
           const newSize = this.getGraphSize()
           this.networkInstance.changeSize(newSize.width, newSize.height)
-        }, 300) // 根据侧边栏动画时长可能需要调整这个延迟
+        }, 300) // 根据侧边栏动画时长 //INFO可能需要调整这个延迟
       })
     },
     toggleMenu(event, type) {
@@ -558,7 +646,7 @@ export default {
         this.toggleMenu(event, type)
       } else {
         const { clientX, clientY } = event// 获取鼠标点击的位置
-        const biasX = this.$store.state.app.sidebar.opened ? -220 : -60
+        const biasX = this.sidebar ? -220 : -60
         const biasY = -96
         // 显示菜单并设置位置
         const menu = document.getElementById('nodeContextMenu')
@@ -573,19 +661,19 @@ export default {
           }
         }
         this.menuListItems = type === 'node' ? [
-          { key: '1', value: '查看节点信息', id: event.item.getID() },
-          { key: '2', value: '查看节点流表', id: event.item.getID() },
-          { key: '3', value: '查看节点端口', id: event.item.getID() },
+          // { key: '1', value: '查看节点信息', id: event.item.getID() },
+          // { key: '2', value: '查看节点流表', id: event.item.getID() },
+          // { key: '3', value: '查看节点端口', id: event.item.getID() },
           { key: '4', value: '移除模拟节点', id: event.item.getID() },
           { key: '5', value: '解除模拟故障', id: event.item.getID() },
           { key: '6', value: '模拟节点故障', id: event.item.getID() }
         ] : [
-          { key: '7', value: '移除模拟链路', id: event.item.getID() },
-          { key: '8', value: '查看链路流表', id: event.item.getID() },
-          { key: '9', value: '查看链路端口', id: event.item.getID() },
-          { key: '10', value: '查看链路链路', id: event.item.getID() },
-          { key: '11', value: '查看链路流表', id: event.item.getID() },
-          { key: '12', value: '查看链路流表', id: event.item.getID() }
+          { key: '7', value: '移除模拟链路', id: event.item.getID() }
+          // { key: '8', value: '查看链路流表', id: event.item.getID() },
+          // { key: '9', value: '查看链路端口', id: event.item.getID() },
+          // { key: '10', value: '查看链路链路', id: event.item.getID() },
+          // { key: '11', value: '查看链路流表', id: event.item.getID() },
+          // { key: '12', value: '查看链路流表', id: event.item.getID() }
         ]
         menu.style.display = 'block'
         menu.style.left = `${clientX + biasX}px`
@@ -598,13 +686,33 @@ export default {
       getGlobalDelay().then((res) => {
         res.data.output[ 'delay-status-list' ].forEach((element) => {
           if (!element[ 'nodeConnector' ].includes('openflow')) {
-            // const str1 = element[ 'nodeConnector' ].slice(0, element[ 'nodeConnector' ].indexOf('_') + 1).slice(0, element[ 'nodeConnector' ].slice(0, element[ 'nodeConnector' ].indexOf('_') + 1).indexOf(':') + 2)
-            // const str2 = element[ 'nodeConnector' ].slice(element[ 'nodeConnector' ].indexOf('_') + 1, element[ 'nodeConnector' ].length).slice(0, element[ 'nodeConnector' ].slice(element[ 'nodeConnector' ].indexOf('_') + 1, element[ 'nodeConnector' ].length).indexOf(':') + 2)
-
-            // const combineStr = str1 + str2
-            this.networkInstance.updateItem(element['nodeConnector'], {
-              label: element[ 'delay' ] + 'ms'
-            })
+            if (element[ 'delay' ] > 98) {
+              this.networkInstance.updateItem(element['nodeConnector'], {
+                label: element[ 'delay' ] + 'ms',
+                style: {
+                  stroke: 'red'
+                },
+                labelCfg: {
+                  style: {
+                    fill: 'red',
+                    stroke: 'red'
+                  }
+                }
+              })
+            } else {
+              this.networkInstance.updateItem(element['nodeConnector'], {
+                label: element[ 'delay' ] + 'ms',
+                style: {
+                  stroke: '#333'
+                },
+                labelCfg: {
+                  style: {
+                    fill: 'black',
+                    stroke: 'black'
+                  }
+                }
+              })
+            }
           }
         })
         this.networkInstance.refresh()
@@ -615,13 +723,14 @@ export default {
       popup.style.display = 'block'
       const overlay = document.getElementById('overlay')
       overlay.style.display = 'block'
+      const addOptions = [{ type: 'node', options: [{ key: 'name', label: '名称', category: 'input', modelName: 'name' }, { key: 'type', label: '类型', category: 'select', modelName: 'type', options: ['交换机', '服务器', '手机', 'VR头盔'] }] }, { type: 'edge', options: [{ key: 'name', label: '名称', category: 'input', modelName: 'name' }, { key: 'node1', label: '源节点', category: 'select', modelName: 'node1' }, { key: 'node2', label: '目的节点', category: 'select', modelName: 'node2' }, { key: 'bandwidth', label: '最大带宽', category: 'input', modelName: 'bandwidth' }] }]
       switch (type) {
         case 'node':
-          this.testArr = this.addOptions[ 0 ].options
+          this.testArr = addOptions[ 0 ].options
           console.log(this.testArr)
           break
         case 'edge':
-          this.testArr = this.addOptions[ 1 ].options
+          this.testArr = addOptions[ 1 ].options
           console.log(this.testArr)
           break
         default:
@@ -661,6 +770,20 @@ export default {
         rightChartPanel.style.transform = 'translate(100%)'
         // handleChartsButton.style.transform = 'translate(0%)'
       }
+    },
+    addEventClick() {
+      window.addEventListener('click', this.closeSidebar)
+    },
+    closeSidebar(evt) {
+      const parent1 = evt.target.closest('.rightChartPanel')
+      const parent2 = evt.target.closest('.handle-charts-button') // 点击判定条件必须剔除侧边栏和按钮两个元素，不然会导致侧边栏无法关闭，this.show无法变为false
+      if (!parent1 && !parent2) {
+        this.show = false
+        window.removeEventListener('click', this.closeSidebar)
+      }
+    },
+    toggleSidebar() {
+      this.show = !this.show
     }
   }
 }
@@ -719,14 +842,15 @@ export default {
   border:grey 2px solid;
 
 }
-.handle-charts-button {
+.handle-charts-button {//按钮必须和侧边栏不在同一个div下，不然overflow会影响按钮的显示
   width: 48px;
   height: 48px;
-  position: absolute;
-  left: -48px;
+  position: fixed;
+  right: 0px;
+  bottom:0;
   text-align: center;
   font-size: 24px;
-  border-radius: 6px 6px 0 0 !important;
+  border-radius: 6px 0 0 6px !important;
   z-index: 0;
   pointer-events: auto;
   cursor: pointer;
@@ -738,17 +862,43 @@ export default {
   }
 }
 .rightChartPanel { //右侧体表边栏样式
-  width: 100%;
-  max-width: 320px;
+  max-width: 650px;
   height: 100vh;
   position: fixed;
   top: 0;
   right: 0;
+  overflow-y: auto;
   box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, .05);
   transition: all .25s cubic-bezier(.7, .3, .1, 1);
   transform: translate(100%);
   background: #fff;
-  z-index: 40000;
+  z-index: 2001;
+}
+.rightChartPanel-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity .3s cubic-bezier(.7, .3, .1, 1);
+  background: rgba(0, 0, 0, .2);
+  z-index: -1;
+}
+.show {
+  transition: all 2s cubic-bezier(.7, .3, .1, 1);
+  .rightChartPanel-background {
+    z-index: 20000;
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  .rightChartPanel {
+    transform: translate(0);
+    z-index: 40001;
+  }
+  .handle-charts-button{
+    transform: translateX(-620px);
+  }
 }
 
 </style>

@@ -42,6 +42,12 @@ module.exports = {
         secure: false,
         pathRewrite: { '^/dev-api': '/' },
         changeOrigin: true
+      },
+      '/digital-bot': {
+        target: 'http://10.29.77.144:9093/',
+        secure: false,
+        pathRewrite: { '^/digital-bot': '/' },
+        changeOrigin: true
       }
     },
     before: require('./mock/mock-server.js')

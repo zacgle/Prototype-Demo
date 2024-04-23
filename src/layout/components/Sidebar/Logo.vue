@@ -3,11 +3,11 @@
     <transition name="sidebarLogoFade">
       <router-link v-if="collapse" key="collapse" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 v-else class="sidebar-title">{{ title }} </h1>
+        <h1 v-else class="sidebar-title">6G全场景<br>按需服务网络</h1>
       </router-link>
       <router-link v-else key="expand" class="sidebar-logo-link" to="/">
         <img v-if="logo" :src="logo" class="sidebar-logo">
-        <h1 class="sidebar-title">{{ title }} </h1>
+        <h1 class="sidebar-title">6G全场景<br>按需服务网络 </h1>
       </router-link>
     </transition>
   </div>
@@ -25,7 +25,7 @@ export default {
   data() {
     return {
       title: '6G全场景按需服务网络',
-      logo: 'https://www.bupt.edu.cn/__local/1/F4/62/05815E603799A29D53DDB1E0FAF_557A7220_102AD.png'
+      logo: require('@/assets/network_icons/logo.png')
     }
   }
 }
@@ -44,7 +44,7 @@ export default {
 .sidebar-logo-container {
   position: relative;
   width: 100%;
-  height: 50px;
+  height: 100px;
   line-height: 50px;
   background: #2b2f3a;
   text-align: center;
@@ -55,8 +55,8 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      width: 55px;
+      height: 55px;
       vertical-align: middle;
       margin-right: 12px;
     }
@@ -67,7 +67,7 @@ export default {
       color: #fff;
       font-weight: 600;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 24px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

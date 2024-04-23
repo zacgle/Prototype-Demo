@@ -141,7 +141,7 @@ export default {
 
                 break
               case '服务器':
-                params = { operation: 'add_service', name1: this.inputFields.name }
+                params = { operation: 'add_host', name1: this.inputFields.name }
 
                 break
               default:
@@ -150,6 +150,7 @@ export default {
             }
           } else {
             params = { operation: 'add_link', name1: this.inputFields.node1, name2: this.inputFields.node2 }
+            console.log(params)
           }
         } else {
           console.log('error submit!!')

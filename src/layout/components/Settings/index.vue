@@ -1,9 +1,9 @@
 <template>
   <div class="drawer-container">
     <div>
-      <h3 class="drawer-title">Page style setting</h3>
+      <h3 class="drawer-title">仿真网络总控</h3>
 
-      <div class="drawer-item">
+      <!-- <div class="drawer-item">
         <span>Theme Color</span>
         <theme-picker style="float: right;height: 26px;margin: -3px 8px 0 0;" @change="themeChange" />
       </div>
@@ -21,7 +21,7 @@
       <div class="drawer-item">
         <span>Sidebar Logo</span>
         <el-switch v-model="sidebarLogo" class="drawer-switch" />
-      </div>
+      </div> -->
       <div>
         <el-button type="primary" @click="startNet()">启动网络</el-button>
         <el-button type="danger" @click="endNet()"> 关闭网络</el-button>
@@ -32,11 +32,11 @@
 </template>
 
 <script>
-import ThemePicker from '@/components/ThemePicker'
+// import ThemePicker from '@/components/ThemePicker'
 import { startNet, endNet } from '@/api/prototype'
 
 export default {
-  components: { ThemePicker },
+  // components: { ThemePicker },
   data() {
     return {}
   },
